@@ -1,14 +1,8 @@
 RPN_and_E
 =========
 
-这是一个简单（位数为个位）的中缀转后缀并求值的程序
+This is a simple ( median bits) infix turn suffix and evaluated program.
 
-                  IADA
-                 刘乘艺
-                 
-规则：从左到右遍历中缀表达式的每个数字和符号，若是数字就输出，
-即成为后缀表达式的一部分；若是符号，则判断其与栈顶符号的优先级，
-是右括号或优先级低于找顶符号（乘除优先加减）则栈顶元素依次出找并输出，
-并将当前符号进栈，一直到最终输出后缀表达式为止。
+Rules: From left to right traverse each suffix numbers and symbols expressions, if digital outputs that become part of the postfix expression ; if the symbol, and the top of the stack to determine the priority of its symbols , is a right parenthesis or priority find the top level is less than symbol ( addition and subtraction , multiplication and division take precedence ) turn out to find the top element and output , and the current symbol into the stack until the final output postfix expression so far.
 
-后缀表达式求值运算的问题：stack<char> --> stack<int> 转换，编码存在差异数字总多48,所以不得不减去48......
+Postfix expression evaluation value calculation problem : stack -> stack conversion, coding differences in figures for the total more than 48 , so had to subtract 48 ......
