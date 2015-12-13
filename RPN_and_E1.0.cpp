@@ -10,10 +10,6 @@ using namespace std;
 *并将当前符号进栈，一直到最终输出后缀表达式为止。
 */
 
-/*                 IADA
-*                刘乘艺
-*/
-
 int main()
 {
 	stack<char> Stacks;
