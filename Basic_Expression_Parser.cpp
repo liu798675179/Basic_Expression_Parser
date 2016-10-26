@@ -12,7 +12,7 @@ using namespace std;
 vector<string> Split() {
 	vector<string> temp_VecStr;
 	regex reg_dig("[[:digit:].]");
-	string temp_str, temp_str1, temp_str2, temp_str3, temp_str4;
+	string temp_str, temp_str1, temp_str2, temp_str3;
 
 	cout << "请输入表达式：" << endl;
 	cin >> temp_str;
