@@ -1,161 +1,223 @@
+#include <stdexcept>
 #include <iostream>
+#include <vector>
+#include <string>
 #include <stack>
+#include <regex>
+
 using namespace std;
 
-//中缀转后缀
+//拆分字符
+vector<string> Split() {
+	vector<string> temp_VecStr;
+	regex reg_dig("[[:digit:].]");
+	string temp_str, temp_str1, temp_str2;
 
-/*规则：从左到右遍历中缀表达式的每个数字和符号，若是数字就输出，
-*即成为后缀表达式的一部分；若是符号，则判断其与栈顶符号的优先级，
-*是右括号或优先级低于找顶符号（乘除优先加减）则栈顶元素依次出找并输出，
-*并将当前符号进栈，一直到最终输出后缀表达式为止。
-*/
+	cout << "请输入表达式：" << endl;
+	cin >> temp_str;
 
-int main()
-{
-	stack<char> Stacks;
-	stack<char> Sc;
-	char b;
-	cout << "请输入中缀表达式" << endl;
-	while (cin >> b){
-		switch (b){
-		case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
-			Sc.push(b);
-			break;
-		case'*':case'/':
-			if (!Stacks.empty()){
-				if (Stacks.top() == '*' || Stacks.top() == '/'){
-					while (!Stacks.empty() && Stacks.top() != '('){
-						Sc.push(Stacks.top());
-						Stacks.pop();
-					}
-					Stacks.push(b);
-					break;
-				}
-				else{
-					Stacks.push(b);
-					break;
+	for (auto i = temp_str.begin(); i != temp_str.end(); ++i) {
+		temp_str2 = *i;
+
+		if (regex_search(temp_str2, reg_dig)) {
+			temp_str1 += temp_str2;
+
+			auto p = i;
+
+			if (p != temp_str.end() && ++p == temp_str.end()) {
+				temp_VecStr.push_back(temp_str1);
+				temp_str1.clear();
+			}
+			--p;
+
+			if (p != temp_str.end() && ++p != temp_str.end()) {
+				--p;
+				temp_str2 = *(++p);
+
+				if (!regex_search(temp_str2, reg_dig)) {
+					temp_VecStr.push_back(temp_str1);
+					temp_str1.clear();
 				}
 			}
-		case'(':
-			Stacks.push(b);
-			break;
-		case '+':case '-':
-			if (!Stacks.empty()){
-				if (Stacks.top() == '+' || Stacks.top() == '-' || Stacks.top() == '*' || Stacks.top() == '/'){
-					while (!Stacks.empty() && Stacks.top() != '('){
-						Sc.push(Stacks.top());
-						Stacks.pop();
-					}
-					Stacks.push(b);
-					break;
-				}
-				else{
-					Stacks.push(b);
-					break;
-				}
-			}
-			else{
-				Stacks.push(b);
-				break;
-			}
-		case ')':
-			while (Stacks.top() != '('){
-				Sc.push(Stacks.top());
-				Stacks.pop();
-			}
-			Stacks.pop();
-			break;
+		}
+		else {
+			temp_str2 = *i;
+			temp_VecStr.push_back(temp_str2);
 		}
 	}
-	while (!Stacks.empty()){
-		Sc.push(Stacks.top());
-		Stacks.pop();
-	}
-	stack<char> Ys_Source_temp;
-	stack<char> temp;
-	while (!Sc.empty()){
-		Ys_Source_temp.push(Sc.top());
-		temp.push(Sc.top());
-		Sc.pop();
-	}
-	cout << "其后缀表达式为" << endl;
-	while (!temp.empty()){
-		cout << temp.top() << " ";
-		temp.pop();
-	}
-	cout << endl;
 
-	/*             后缀表达式求值运算               */
+	return temp_VecStr;
+}
 
-	//问题：stack<char> --> stack<int> 转换，编码存在差异数字总多48,所以不得不减去48......
+//转换为后缀表达式
+stack<string> Postfix_Expression(vector<string> temp_VecStr) {
+	stack<string> temp_StackSymbol, temp_StackExp, temp_Stack1, temp_Stack2;
+	regex reg_dig("[[:digit:].]+");
+	string temp_str;
 
-	stack<long> Ys_temp;
-	int n1, n2;
-	while (!Ys_Source_temp.empty()){
-		switch (Ys_Source_temp.top()){
-		case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
-			Ys_temp.push(Ys_Source_temp.top() - 48);
-			Ys_Source_temp.pop();
-			break;
-		case '+':
-			if (!Ys_temp.empty()){
-				n1 = Ys_temp.top();
-				Ys_temp.pop();
-				n2 = Ys_temp.top();
-				Ys_temp.pop();
-				Ys_temp.push(n1 + n2);
-				Ys_Source_temp.pop();
-				break;
+	for (auto &i : temp_VecStr) {
+		temp_str = i;
+
+		if (regex_search(temp_str, reg_dig)) {
+			temp_StackExp.push(temp_str);
+		}
+
+		if (temp_str == "(") {
+			temp_StackSymbol.push(temp_str);
+		}
+
+		if (temp_str == ")") {
+			while (temp_StackSymbol.top() != "(") {
+				temp_StackExp.push(temp_StackSymbol.top());
+				temp_StackSymbol.pop();
 			}
-			else{
-				cout << "表达式输入错误，请重新输入" << endl;
-				break;
+			temp_StackSymbol.pop();
+		}
+
+		if (temp_str == "+" || temp_str == "-") {
+			if (!temp_StackSymbol.empty()) {
+				if (temp_StackSymbol.top() == "+" || temp_StackSymbol.top() == "-" || temp_StackSymbol.top() == "*" || temp_StackSymbol.top() == "/") {
+					while (!temp_StackSymbol.empty() && temp_StackSymbol.top() != "(") {
+						temp_StackExp.push(temp_StackSymbol.top());
+						temp_StackSymbol.pop();
+					}
+					temp_StackSymbol.push(temp_str);
+				}
+				else {
+					temp_StackSymbol.push(temp_str);
+				}
 			}
-		case'*':
-			if (!Ys_temp.empty()){
-				n1 = Ys_temp.top();
-				Ys_temp.pop();
-				n2 = Ys_temp.top();
-				Ys_temp.pop();
-				Ys_temp.push(n1 * n2);
-				Ys_Source_temp.pop();
-				break;
+			else {
+				temp_StackSymbol.push(temp_str);
 			}
-			else{
-				cout << "表达式输入错误，请重新输入" << endl;
-				break;
+		}
+
+		if (temp_str == "*" || temp_str == "/") {
+			if (!temp_StackSymbol.empty()) {
+				if (temp_StackSymbol.top() == "*" || temp_StackSymbol.top() == "/") {
+					while (!temp_StackSymbol.empty() && temp_StackSymbol.top() != "(" && temp_StackSymbol.top() != "+" && temp_StackSymbol.top() != "-") {
+						temp_StackExp.push(temp_StackSymbol.top());
+						temp_StackSymbol.pop();
+					}
+					temp_StackSymbol.push(temp_str);
+				}
+				else {
+					temp_StackSymbol.push(temp_str);
+				}
 			}
-		case '-':
-			if (!Ys_temp.empty()){
-				n1 = Ys_temp.top();
-				Ys_temp.pop();
-				n2 = Ys_temp.top();
-				Ys_temp.pop();
-				Ys_temp.push(n2 - n1);
-				Ys_Source_temp.pop();
-				break;
-			}
-			else{
-				cout << "表达式输入错误，请重新输入" << endl;
-				break;
-			}
-		case '/':
-			if (!Ys_temp.empty()){
-				n1 = Ys_temp.top();
-				Ys_temp.pop();
-				n2 = Ys_temp.top();
-				Ys_temp.pop();
-				Ys_temp.push(n2 / n1);
-				Ys_Source_temp.pop();
-				break;
-			}
-			else{
-				cout << "表达式输入错误，请重新输入" << endl;
-				break;
+			else {
+				temp_StackSymbol.push(temp_str);
 			}
 		}
 	}
-	cout << "表达式的值为：";
-	cout << Ys_temp.top() << endl;
+
+	while (!temp_StackSymbol.empty()) {
+		temp_StackExp.push(temp_StackSymbol.top());
+		temp_StackSymbol.pop();
+	}
+
+	while (!temp_StackExp.empty()) {
+		temp_Stack1.push(temp_StackExp.top());
+		temp_Stack2.push(temp_StackExp.top());
+		temp_StackExp.pop();
+	}
+
+	cout << endl << "其后缀表达式为:" << endl << endl;
+	while (!temp_Stack2.empty()) {
+		cout << temp_Stack2.top() << " ";
+		temp_Stack2.pop();
+	}
+	cout << endl << endl;
+
+	return temp_Stack1;
+}
+
+//求值
+void Evaluation(stack<string> temp_StackExp) {
+	auto temp_num1 = 0.0, temp_num2 = 0.0;
+	regex reg_dig("[[:digit:].]+");
+	stack<double> temp_StackNum;
+	string temp_str;
+
+	try {
+		while (!temp_StackExp.empty()) {
+			temp_str = temp_StackExp.top();
+
+			if (regex_search(temp_str, reg_dig)) {
+				temp_StackNum.push(stod(temp_str));
+				temp_StackExp.pop();
+			}
+
+			if (temp_str == "+") {
+				if (!temp_StackNum.empty()) {
+					temp_num1 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_num2 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_StackNum.push(temp_num1 + temp_num2);
+					temp_StackExp.pop();
+				}
+				else {
+					throw runtime_error("表达式输入错误，请重新输入!");
+				}
+			}
+
+			if (temp_str == "-") {
+				if (!temp_StackNum.empty()) {
+					temp_num1 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_num2 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_StackNum.push(temp_num2 - temp_num1);
+					temp_StackExp.pop();
+				}
+				else {
+					throw runtime_error("表达式输入错误，请重新输入!");
+				}
+			}
+
+			if (temp_str == "*") {
+				if (!temp_StackNum.empty()) {
+					temp_num1 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_num2 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_StackNum.push(temp_num1 * temp_num2);
+					temp_StackExp.pop();
+				}
+				else {
+					throw runtime_error("表达式输入错误，请重新输入!");
+				}
+			}
+
+			if (temp_str == "/") {
+				if (!temp_StackNum.empty()) {
+					temp_num1 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_num2 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_StackNum.push(temp_num2 / temp_num1);
+					temp_StackExp.pop();
+				}
+				else {
+					throw runtime_error("表达式输入错误，请重新输入!");
+				}
+			}
+		}
+	}
+
+	catch (runtime_error &err) {
+		cout << err.what() << endl;
+		return Evaluation(Postfix_Expression(Split()));
+	}
+
+	cout << "表达式的值为： " << temp_StackNum.top() << endl << endl;
+}
+
+int main() {
+	while (1) {
+		Evaluation(Postfix_Expression(Split()));
+	}
+
 	return 0;
 }
