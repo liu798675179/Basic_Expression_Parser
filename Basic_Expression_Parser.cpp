@@ -11,7 +11,7 @@ using namespace std;
 vector<string> Split() {
 	vector<string> temp_VecStr;
 	regex reg_dig("[[:digit:].]");
-	string temp_str, temp_str1, temp_str2;
+	string temp_str, temp_str1, temp_str2, temp_str3, temp_str4;
 
 	cout << "请输入表达式：" << endl;
 	cin >> temp_str;
@@ -24,13 +24,13 @@ vector<string> Split() {
 
 			auto p = i;
 
-			if (p != temp_str.end() && ++p == temp_str.end()) {
+			if (++p == temp_str.end()) {
 				temp_VecStr.push_back(temp_str1);
 				temp_str1.clear();
 			}
 			--p;
 
-			if (p != temp_str.end() && ++p != temp_str.end()) {
+			if (++p != temp_str.end()) {
 				--p;
 				temp_str2 = *(++p);
 
@@ -41,8 +41,38 @@ vector<string> Split() {
 			}
 		}
 		else {
-			temp_str2 = *i;
-			temp_VecStr.push_back(temp_str2);
+			if (temp_str2 == "+" || temp_str2 == "-" || temp_str2 == "*" || temp_str2 == "/" || temp_str2 == "(") {
+				temp_VecStr.push_back(temp_str2);
+
+				auto p = i;
+				if (++p != temp_str.end()) {
+					--p;
+
+					temp_str3 = *(++p);
+					if (temp_str3 == "-") {
+						temp_str1 += temp_str3;
+
+						if (++p != temp_str.end()) {
+							auto p1 = p;
+							temp_str3 = *p1;
+							for (; regex_search(temp_str3, reg_dig) && p1 != temp_str.end(); ++p1, ++i) {
+								temp_str3 = *p1;
+								if (regex_search(temp_str3, reg_dig)) {
+									temp_str1 += temp_str3;
+								}
+							}
+							temp_VecStr.push_back(temp_str1);
+							temp_str1.clear();
+							if (regex_search(temp_str3, reg_dig)) {
+								++i;
+							}
+						}
+					}
+				}
+			}
+			else {
+				temp_VecStr.push_back(temp_str2);
+			}
 		}
 	}
 
