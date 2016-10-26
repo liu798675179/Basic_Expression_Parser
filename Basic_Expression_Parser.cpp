@@ -4,6 +4,7 @@
 #include <string>
 #include <stack>
 #include <regex>
+#include <cmath>
 
 using namespace std;
 
@@ -41,7 +42,7 @@ vector<string> Split() {
 			}
 		}
 		else {
-			if (temp_str2 == "+" || temp_str2 == "-" || temp_str2 == "*" || temp_str2 == "/" || temp_str2 == "(") {
+			if (temp_str2 == "+" || temp_str2 == "-" || temp_str2 == "*" || temp_str2 == "/" || temp_str2 == "(" || temp_str2 == "%") {
 				temp_VecStr.push_back(temp_str2);
 
 				auto p = i;
@@ -106,8 +107,26 @@ stack<string> Postfix_Expression(vector<string> temp_VecStr) {
 
 		if (temp_str == "+" || temp_str == "-") {
 			if (!temp_StackSymbol.empty()) {
-				if (temp_StackSymbol.top() == "+" || temp_StackSymbol.top() == "-" || temp_StackSymbol.top() == "*" || temp_StackSymbol.top() == "/") {
+				if (temp_StackSymbol.top() == "+" || temp_StackSymbol.top() == "-" || temp_StackSymbol.top() == "*" || temp_StackSymbol.top() == "/" || temp_StackSymbol.top() == "%") {
 					while (!temp_StackSymbol.empty() && temp_StackSymbol.top() != "(") {
+						temp_StackExp.push(temp_StackSymbol.top());
+						temp_StackSymbol.pop();
+					}
+					temp_StackSymbol.push(temp_str);
+				}
+				else {
+					temp_StackSymbol.push(temp_str);
+				}
+			}
+			else {
+				temp_StackSymbol.push(temp_str);
+			}
+		}
+
+		if (temp_str == "%") {
+			if (!temp_StackSymbol.empty()) {
+				if (temp_StackSymbol.top() == "*" || temp_StackSymbol.top() == "/" || temp_StackSymbol.top() == "%") {
+					while (!temp_StackSymbol.empty() && temp_StackSymbol.top() != "(" && temp_StackSymbol.top() != "+" && temp_StackSymbol.top() != "-") {
 						temp_StackExp.push(temp_StackSymbol.top());
 						temp_StackSymbol.pop();
 					}
@@ -199,6 +218,20 @@ void Evaluation(stack<string> temp_StackExp) {
 					temp_num2 = temp_StackNum.top();
 					temp_StackNum.pop();
 					temp_StackNum.push(temp_num2 - temp_num1);
+					temp_StackExp.pop();
+				}
+				else {
+					throw runtime_error("表达式输入错误，请重新输入!");
+				}
+			}
+
+			if (temp_str == "%") {
+				if (!temp_StackNum.empty()) {
+					temp_num1 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_num2 = temp_StackNum.top();
+					temp_StackNum.pop();
+					temp_StackNum.push(fmod(temp_num2, temp_num1));
 					temp_StackExp.pop();
 				}
 				else {
